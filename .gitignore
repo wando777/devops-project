@@ -1,0 +1,18 @@
+# Ignorar arquivos de estado do Kubernetes
+*.kubeconfig
+*.kubeconfig.*
+
+# Ignorar arquivos de cache do Kubernetes
+.kube/
+
+# Ignorar arquivos de backup
+*.bak
+*.backup
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar .vscode
+.vscode/
+
+scripts-estudo/
