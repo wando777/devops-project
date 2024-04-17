@@ -119,7 +119,7 @@ Agora, vamos configurar o Prometheus e o Grafana para monitorar a aplicação.
 
 ### Requisitos
 
-- Certifique-se de que apenas o Grafana seja acessível fora do Cluster, utilizando um tipo de serviço LoadBalancer ou Ingress.
+- Certifique-se de que apenas o Grafana seja acessível fora do Cluster, utilizando um tipo de serviço LoadBalancer ou NodePort.
 
 - Utilize um Persistent Volume Claim (PVC) para armazenar os dados do Prometheus de maneira persistente.
 
@@ -288,7 +288,25 @@ spec:
 
 ## Passo 3: Testes de Stress
 
-- Testes de stress na aplicação com JMetter.
+- **Testes de stress na aplicação com JMetter graficamente apontando pro serviço da aplicação que possui uma porta externa para acesso via localhost.**
+
+1. Primeiro teste: - 100 usuários - 1 segundos de ramp-up - 1000 iterações
+   ![Alt text](/imagens/stresstest1.png)
+   ![Alt text](/imagens/stresstest2.png)
+
+2. Segundo teste: - 100 usuários - 10 segundos de ramp-up - 2000 iterações - 300ms Duration Assertion
+   ![Alt text](/imagens/stresstest3.png)
+   ![Alt text](/imagens/stresstest4.png)
+
+- **Testes de stress na aplicação com JMetter via script no terminal dentro do cluster k8s apontando pro seriviço da aplicação que possui uma porta interna para acesso do tipo ClusterIP.**
+
+1. 25 usuários - 10 segundos de ramp-up - 1000 iterações - 300ms Duration Assertion
+   ![Alt text](/imagens/stresstest5.png)
+
+   [Dash com mais detalhes dos resultados do teste de stress](/scripts/stress-test/resultsdash/stress-test-result.html):
+   ![Alt text](/imagens/stresstest6.png)
+
+   Todos os dados do test estão na pasta [stress-test](/scripts/stress-test).
 
 ## Passo 4: Esteira de Deploy no Jenkins
 

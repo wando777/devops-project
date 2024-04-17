@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jmeter
+  template:
+    metadata:
+      labels:
+        app: jmeter
+    spec:
+      containers:
+        - name: jmeter
+          image: justb4/jmeter:latest
+          ports:
+            - containerPort: 8080
+          command:
+            - "jmeter"
+            - "-n"
+            - "-t"
+            - "/stress-test/geekshopping-tests.jmx"
+            - "-l"
+            - "/stress-test/results/"
+            - "-e"
+            - "-o"
+            - "/stress-test/resultsdash"
+          volumeMounts:
+            - mountPath: /stress-test
+              name: shared-data
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-data-claim

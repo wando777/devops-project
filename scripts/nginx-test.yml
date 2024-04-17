@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  # initContainers:
+  #   - name: volume-permissions
+  #     image: busybox
+  #     command: ["sh", "-c", "chown -R 65534:65534 /testes-geekshoppingapi"]
+  #     volumeMounts:
+  #       - name: test-volume
+  #         mountPath: /testes-geekshoppingapi
+  containers:
+    - name: nginx
+      image: nginx:latest
+      volumeMounts:
+        - name: test-volume
+          mountPath: /stress-test
+  volumes:
+    - name: test-volume
+      persistentVolumeClaim:
+        claimName: shared-data-claim
