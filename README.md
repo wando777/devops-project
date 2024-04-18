@@ -279,14 +279,59 @@ spec:
       targetPort: 3000
 ```
 
-- Crie dashboards no Grafana que exponham dados sensíveis da sua aplicação, como memória e CPU.
+- Criando dashboards no Grafana que exponham dados sensíveis da aplicação, como memória e CPU.
 
 > .NET 6
 > ![Alt text](/imagens/dotnet-grafana.png)
 > ASPNET
 > ![Alt text](/imagens/ASPNET-grafana.png)
 
-## Passo 3: Testes de Stress
+## Passo 3: Esteira de Deploy no Jenkins
+
+- Esteira de deploy no Jenkins que faz o deploy da aplicação no Kubernetes.
+
+**\*obs: Para essa etapa, apenas foi realizado o build da aplicação .NET 6 no Jenkins**.
+
+### Requisitos
+
+1. Instalação do [plugin do dotnet sdk.](https://plugins.jenkins.io/dotnet-sdk/)
+2. Configurar o pipeline com o seguinte script:
+
+```groovy
+pipeline {
+ agent any
+ tools{
+     dotnetsdk 'dotnet'
+ }
+
+ stages {
+     stage('Initialize') {
+         steps {
+             echo 'Pipeline iniciado em:'
+             bat 'echo %DATE%'
+         }
+     }
+     stage('Git clone'){
+         steps {
+             echo 'Clonando repositório'
+             git(url:'https://github.com/wando777/microservices-dotnet6.git', branch: 'main')
+         }
+     }
+     stage('Build'){
+         steps{
+             dotnetClean(project: 'GeekShop.sln')
+             dotnetBuild(project: 'GeekShop.sln')
+         }
+     }
+ }
+}
+```
+
+Build realizado com sucesso:
+![Alt text](imagens/jenkins-build2.png)
+![Alt text](imagens/jenkins-build1.png)
+
+## Passo 4: Testes de Stress
 
 - **Testes de stress na aplicação com JMetter graficamente apontando pro serviço da aplicação que possui uma porta externa para acesso via localhost.**
 
@@ -307,15 +352,3 @@ spec:
    ![Alt text](/imagens/stresstest6.png)
 
    Todos os dados do test estão na pasta [stress-test](/scripts/stress-test).
-
-## Passo 4: Esteira de Deploy no Jenkins
-
-- Esteira de deploy no Jenkins que faz o deploy da aplicação no Kubernetes.
-
-<!-- ## Conclusão
-
-Neste artigo, vimos como configurar uma aplicação no Kubernetes, utilizando o Prometheus e o Grafana para monitorar e visualizar métricas. Seguindo os passos descritos, você será capaz de subir sua aplicação, configurar o monitoramento e criar dashboards personalizados no Grafana.
-
-Lembre-se de adaptar essas instruções de acordo com as especificidades da sua aplicação e do seu ambiente.
-
-Espero que este artigo tenha sido útil! Se você tiver alguma dúvida adicional, não hesite em perguntar. -->
