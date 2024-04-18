@@ -6,7 +6,40 @@ Autor: Wanderson H. A. Leite
 
 Nesta docs, está descrito os passos necessários para configurar uma aplicação .NET 6 no Kubernetes, utilizando o Prometheus e o Grafana para monitorar e visualizar métricas para implantação e monitoramento de uma aplicação customizada. Ademais, será realizado testes de stress e uma esteira de deploy da aplicação no Jenkins.
 
-## Passo 1: Subindo a aplicação no Kubernetes
+## Passo 1: Criando imagem da aplicação .NET 6
+
+A imagem usada nesse projeto foi a `geekshoppingapi:v1`, que foi criada a partir do Dockerfile abaixo:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["GeekShopping.ProductAPI/GeekShopping.ProductAPI.csproj", "GeekShopping.ProductAPI/"]
+RUN dotnet restore "./GeekShopping.ProductAPI/./GeekShopping.ProductAPI.csproj"
+COPY . .
+WORKDIR "/src/GeekShopping.ProductAPI"
+RUN dotnet build "./GeekShopping.ProductAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./GeekShopping.ProductAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "GeekShopping.ProductAPI.dll"]
+```
+
+A imagem publicada no Docker Hub pode ser encontrada [aqui](https://hub.docker.com/r/wando777/geekshoppingapi).
+![Alt text](imagens/docker-image.png)
+
+O repositório da API da aplicação .NET 6 pode ser encontrado [aqui](https://github.com/wando777/microservices-dotnet6)
+
+## Passo 2: Subindo a aplicação no Kubernetes
 
 ### Requisitos
 
@@ -111,7 +144,7 @@ Nesta docs, está descrito os passos necessários para configurar uma aplicaçã
 
 ![Alt text](imagens/bash-infos.png)
 
-## Passo 2: Configurando o Prometheus e o Grafana
+## Passo 3: Configurando o Prometheus e o Grafana
 
 Agora, vamos configurar o Prometheus e o Grafana para monitorar a aplicação.
 
@@ -286,7 +319,7 @@ spec:
 > ASPNET
 > ![Alt text](/imagens/ASPNET-grafana.png)
 
-## Passo 3: Esteira de Deploy no Jenkins
+## Passo 4: Esteira de Deploy no Jenkins
 
 - Esteira de deploy no Jenkins que faz o deploy da aplicação no Kubernetes.
 
@@ -331,7 +364,7 @@ Build realizado com sucesso:
 ![Alt text](imagens/jenkins-build2.png)
 ![Alt text](imagens/jenkins-build1.png)
 
-## Passo 4: Testes de Stress
+## Passo 5: Testes de Stress
 
 - **Testes de stress na aplicação com JMetter graficamente apontando pro serviço da aplicação que possui uma porta externa para acesso via localhost.**
 
@@ -343,7 +376,7 @@ Build realizado com sucesso:
    ![Alt text](/imagens/stresstest3.png)
    ![Alt text](/imagens/stresstest4.png)
 
-- **Testes de stress na aplicação com JMetter via script no terminal dentro do cluster k8s apontando pro seriviço da aplicação que possui uma porta interna para acesso do tipo ClusterIP.**
+- **Testes de stress na aplicação com JMetter via script no terminal dentro do cluster k8s apontando pro serviço da aplicação que possui uma porta interna para acesso do tipo ClusterIP.**
 
 1. 25 usuários - 10 segundos de ramp-up - 1000 iterações - 300ms Duration Assertion
    ![Alt text](/imagens/stresstest5.png)
